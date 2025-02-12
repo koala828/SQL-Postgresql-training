@@ -27,7 +27,7 @@ SELECT
     job_location,                  -- Job location
     job_schedule_type,             -- Type of schedule (full-time, part-time, etc.)
     salary_year_avg,               -- Average annual salary for the posting
-    job_posted_date,               -- Date when the job was posted
+    job_posted_date::date ,               -- Date when the job was posted
     name company_name              -- Company name from company_dim
 FROM job_postings_fact
 LEFT JOIN company_dim 
@@ -36,7 +36,7 @@ WHERE
     job_title_short = 'Data Analyst'  -- Focusing on Data Analyst roles
     AND salary_year_avg IS NOT NULL   -- Exclude jobs with missing salary info
 ORDER BY salary_year_avg DESC         -- Highest salaries first
-LIMIT 10;
+LIMIT 5;
 
 /*
 Note:
@@ -84,7 +84,7 @@ INNER JOIN skills_job_dim
 INNER JOIN skills_dim 
     ON skills_job_dim.skill_id = skills_dim.skill_id       -- Retrieve the human-readable skill names
 ORDER BY salary_year_avg DESC
-LIMIT 1000;
+LIMIT 50;
 
 /* ============================================================
    3. What are the most in-demand skills for Data Analysts?
@@ -122,7 +122,7 @@ JOIN skills_dim AS sd
     ON sc.skill_id = sd.skill_id
 WHERE job_title_short = 'Data Analyst'
 ORDER BY sc.job_title_short, sc.skill_count DESC
-LIMIT 10;
+LIMIT 5;
 
 -- 3.b. TOP 10 Skills for Data Analyst (HIGH PAYING JOBS)
 SELECT 
@@ -145,7 +145,7 @@ JOIN skills_dim AS sd
     ON sc.skill_id = sd.skill_id
 WHERE job_title_short = 'Data Analyst'
 ORDER BY sc.job_title_short, sc.skill_count DESC
-LIMIT 10;
+LIMIT 5;
 
 -- 3.c. TOP 10 Skills for Data Analyst Remote Jobs (with Salary >= 50,000)
 SELECT 
@@ -170,7 +170,7 @@ JOIN skills_dim AS sd
     ON sc.skill_id = sd.skill_id
 WHERE sc.job_work_from_home = TRUE    -- Only remote jobs
 ORDER BY sc.skill_count DESC
-LIMIT 10;
+LIMIT 5;
 
 /*
 Observation:
@@ -250,7 +250,7 @@ WHERE job_title_short = 'Data Analyst'  -- Focus on Data Analyst roles
   AND salary_year_avg IS NOT NULL       -- Exclude rows with missing salary data
 GROUP BY sd.skills                      -- Group by skill
 ORDER BY avg_salary DESC                -- Order by highest average salary
-LIMIT 50;                               -- Limit to top 50 results
+LIMIT 5;                               -- Limit to top 50 results
 
 -- ============================================================
 -- Query 2: Detailed Salary Spread for Each Skill
@@ -281,7 +281,7 @@ WHERE jpf.job_title_short = 'Data Analyst'
   AND jpf.salary_year_avg IS NOT NULL
 GROUP BY sd.skills
 ORDER BY avg_salary DESC
-LIMIT 50;
+LIMIT 5;
 
 -- ============================================================
 -- Query 3: Salary Spread with Job Count Filter to counter extreme values
@@ -312,30 +312,8 @@ WHERE jpf.job_title_short = 'Data Analyst'
 GROUP BY sd.skills
 HAVING COUNT(DISTINCT jpf.job_id) > 5   -- Include only skills with more than 5 job postings
 ORDER BY avg_salary DESC
-LIMIT 50;
+LIMIT 5;
 
-
-
-
-
-
-
-SELECT
-    sd.skills,                                      -- Skill name
-    ROUND(AVG(jpf.salary_year_avg), 0) AS avg_salary, -- Average salary (rounded)
-    MIN(jpf.salary_year_avg) AS min_salary,           -- Minimum salary
-    MAX(jpf.salary_year_avg) AS max_salary,           -- Maximum salary
-    ROUND(STDDEV(jpf.salary_year_avg), 0) AS salary_std_dev, -- Salary standard deviation (rounded)
-    COUNT(DISTINCT jpf.job_id) AS job_count           -- Count of distinct job postings for each skill
-FROM job_postings_fact jpf
-INNER JOIN skills_job_dim sjd ON jpf.job_id = sjd.job_id
-INNER JOIN skills_dim sd ON sjd.skill_id = sd.skill_id
-WHERE jpf.job_title_short = 'Data Analyst'
-  AND jpf.salary_year_avg IS NOT NULL
-GROUP BY sd.skills
-HAVING COUNT(DISTINCT jpf.job_id) > 5   -- Include only skills with more than 5 job postings
-ORDER BY avg_salary DESC
-LIMIT 25;
 
 
 /* ============================================================
@@ -395,7 +373,7 @@ WHERE jpf.job_title_short = 'Data Analyst'
   AND jpf.salary_year_avg IS NOT NULL        
 GROUP BY sd.skills                          
 ORDER BY demand_count DESC
-LIMIT 10;               
+LIMIT 5;               
 
 -- top 5 skills 
 --   1. SQL
